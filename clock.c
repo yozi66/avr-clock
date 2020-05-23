@@ -67,25 +67,25 @@ const __flash char decode[] = {
  * Timing definitions and display driver code
  */
 
-// run the main loop every 10ms (100 interrupts)
-#define MAIN_LOOP_TICKS 100
+// run the main loop every 10ms (500 interrupts)
+#define MAIN_LOOP_TICKS 500
 
 // interrupt counter - the main loop waits for this variable
-volatile char ticks = 0;
+volatile int ticks = 0;
 
-// display one digit for 5 ms (50 x 100us = 50 interrupts)
-#define DIGIT_DURATION 50
+// display one digit for 5 ms (250 x 20us = 250 interrupts)
+#define DIGIT_DURATION 250
 #define DIGIT_COUNT 4
 
 volatile char display[DIGIT_COUNT];
 const __flash char digits[DIGIT_COUNT] = {DIGIT0,DIGIT1,DIGIT2,DIGIT3};
 unsigned char digit_time;
 unsigned char current_digit = 0;
-volatile unsigned char brightness = 19; // 1:min, 50:max
+volatile unsigned char brightness = 19; // 1:min, 250:max
 
 // logarithmic brightness steps give linear feeling
 #define BRIGHTSTEP_COUNT 9
-const __flash unsigned char brightsteps[BRIGHTSTEP_COUNT] = {1,2,3,5,7,12,19,31,50};
+const __flash unsigned char brightsteps[BRIGHTSTEP_COUNT] = {1,2,4,7,15,31,63,125,250};
 
 // https://www.nongnu.org/avr-libc/user-manual/group__avr__interrupts.html
 // timer0 compare A interrupt
@@ -203,13 +203,13 @@ int main(void)
 	
 	PORTD |= BUTTON1 | BUTTON2; // enable pullups for the buttons
 	
-	// set Timer0 to 100 usec @ 12MHz clock
-	// interrupt for every 1200 clock cycle
+	// set Timer0 to 20 usec @ 12MHz clock
+	// interrupt for every 240 clock cycle
 	// enable interrupt on TOP: OCF0A
 	
 	TCCR0A = 0x02;  // CTC mode (count from 0 to OCR0A, no PWM output)
 	TCCR0B = 0x02;	// prescaler: 8
-	OCR0A = 149;    // count from 0 to 149 (freq.div=150)
+	OCR0A = 29;    // count from 0 to 29 (freq.div=30)
 	TIMSK = 0x01;   // enable Timer0 output compare match A interrupt
 	
 	sei(); // enable interrupts
